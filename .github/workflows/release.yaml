@@ -1,13 +1,16 @@
 name: Production Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   validate-build-publish:
-    name: Build and Publish to PyPI
+    name: Build, Release, and Publish
     runs-on: ubuntu-latest
+    # This ensures it only runs if the tag was pushed on your main branch history
+    if: github.ref_type == 'tag'
     environment: pypi
     permissions:
       id-token: write
@@ -19,7 +22,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      # In a release event, GITHUB_REF is the tag (e.g., refs/tags/v1.2.3)
+      # Check if the tag belongs to the main branch history
+      - name: Verify Tag is on Main Branch
+        run: |
+          git fetch origin main
+          if ! git branch -r --contains ${{ github.sha }} | grep -q "origin/main"; then
+            echo "::error::Tag was not pushed on the main branch! Aborting release pipeline."
+            exit 1
+          fi
+          echo "[PASS] Tag is verified on the main branch."
+
+      # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -31,6 +44,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
+      # Safely extract the version from the tag
       - name: Extract Metadata Version
         id: get_version
         run: |
@@ -42,9 +56,8 @@ jobs:
           PROJECT_VERSION=$(python -c "import tomllib; f = open('pyproject.toml', 'rb'); print(tomllib.load(f)['project']['version'])")
           echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
           
-          # Strip the 'v' prefix from the release tag
-          GIT_TAG=${{ github.event.release.tag_name }}
-          GIT_TAG=${GIT_TAG#v}
+          # Extract tag version from refs/tags/v1.2.3 -> 1.2.3
+          GIT_TAG=${GITHUB_REF#refs/tags/v}
           echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
 
       - name: Verify Tag Matches pyproject.toml
@@ -64,6 +77,16 @@ jobs:
       - name: Run Twine Validation Check
         run: python -m twine check dist/*
 
-      # Publish directly to PyPI using PyPA's official trusted publishing action
+      # Automatically create the GitHub Release page and write the changelog
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Securely publish to PyPI using Trusted Publishers
       - name: Publish Package to PyPI
-        uses: pypa/github-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@release/v1
