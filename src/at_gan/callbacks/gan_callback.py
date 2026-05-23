@@ -108,7 +108,7 @@ class GANCallback(tf.keras.callbacks.Callback):
 
         if current_epoch % self.eval_frequency == 0:
             print("[Eval] Running Evaluation Suite...")
-            self.run_evaluation_suite(current_epoch)
+            self.run_evaluation_suite(epoch=epoch)
 
     def on_train_end(self, logs=None):
         """Prints the best model summary to stdout at the conclusion of training.
@@ -138,7 +138,7 @@ class GANCallback(tf.keras.callbacks.Callback):
         """Generates a synthetic batch, runs all fidelity sub-evaluations, logs to W&B, and saves the best model.
 
         Args:
-            epoch: Current epoch number (1-based) used for checkpoint naming and W&B step.
+            epoch: Current 0-based epoch number used explicitly as the target W&B step.
         """
         batch_size = self.real_data.shape[0]
         noise = tf.random.normal([batch_size, self.gan_model.latent_dim])
@@ -158,7 +158,7 @@ class GANCallback(tf.keras.callbacks.Callback):
         adv_error, adv_auc = self._evaluate_adversarial(fake_data_np)
 
         # root mean squared error calculated without correlation error
-        raw_total_error = (pca_error**2) + (adv_error**2)
+        raw_total_error = (pca_error ** 2) + (adv_error ** 2)
         total_error = np.sqrt(raw_total_error / 2.0)
 
         current_metrics = {
@@ -183,16 +183,14 @@ class GANCallback(tf.keras.callbacks.Callback):
                     "Visuals/Correlation_Matrices": wandb.Image(corr_fig),
                     "Visuals/PCA_Overlap": wandb.Image(pca_fig),
                 },
-                step=epoch,
-                # Hold the data in memory and bundle it with WandbCallback's payload
-                commit=False
+                step=epoch
             )
 
         plt.close(corr_fig)
         plt.close(pca_fig)
 
         metric_str = " | ".join([f"{k}: {v:.4f}" for k, v in current_metrics.items()])
-        print(f"[Eval] Epoch {epoch} Metrics | {metric_str}")
+        print(f"[Eval] Epoch {epoch + 1} Metrics | {metric_str}")
 
         if total_error < self.best_score:
             print(
@@ -200,10 +198,10 @@ class GANCallback(tf.keras.callbacks.Callback):
                 f"({self.best_score:.4f} → {total_error:.4f}). Saving best model..."
             )
             self.best_score = total_error
-            self.best_epoch = epoch
+            self.best_epoch = epoch + 1
             self.best_metrics = current_metrics
-            self.best_manager.save(checkpoint_number=epoch)
-            self._save_best_log(epoch, current_metrics)
+            self.best_manager.save(checkpoint_number=epoch + 1)
+            self._save_best_log(epoch + 1, current_metrics)
 
     def _evaluate_correlations(self, fake_data_np: np.ndarray) -> tuple[float, np.ndarray]:
         """Computes mean absolute error of the off-diagonal Pearson correlations.
