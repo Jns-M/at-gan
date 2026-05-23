@@ -7,11 +7,11 @@
 *A Tabular GAN framework for generating synthetic tabular data from arbitrary mixed-type tabular datasets.*
 
 [![Python](https://img.shields.io/badge/python-3.10--3.12-blue.svg)](https://www.python.org/)
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)](https://www.tensorflow.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-purple.svg)](https://www.tensorflow.org/)
 [![Keras](https://img.shields.io/badge/Keras-3.x-red.svg)](https://keras.io/)
 [![W&B](https://img.shields.io/badge/tracking-Weights%20%26%20Biases-yellow.svg)](https://wandb.ai/)
-[![Typer](https://img.shields.io/badge/CLI-Typer-green.svg)](https://typer.tiangolo.com/)
-[![Status](https://img.shields.io/badge/status-research-purple.svg)]()
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/Jns-M/at-gan/blob/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/at-gan)](https://pypi.org/project/at-gan/)
 
 </div>
 
