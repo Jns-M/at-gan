@@ -3,12 +3,12 @@ resume_run_id: null
 seed: 1130
 
 data:
-  dataset_path: "datasets/adult_census_20k.csv"
+  dataset_path: "datasets/data.csv"
   output_path: "experiments/"
-  continuous_cols: ["age", "capital.gain", "capital.loss"]
+  continuous_cols: []
   binary_cols: []
-  categorical_cols: ["workclass", "education", "marital.status", "occupation", "relationship", "race", "sex"]
-  discrete_count_cols: ["hours.per.week"]
+  categorical_cols: []
+  discrete_count_cols: []
   treat_bin_as_cat: false
   beta_noise: true
   smooth_categorical: true

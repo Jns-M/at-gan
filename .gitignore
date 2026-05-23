@@ -1,6 +1,6 @@
 # Custom
 .idea
-datasets/*
+data/*
 eval/*
 experiments/*
 wandb/*

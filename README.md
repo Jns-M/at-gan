@@ -73,7 +73,7 @@ suite**, and **[Weights & Biases](https://wandb.ai/)** (W&B) sweep orchestration
 | **Gradient clipping**               | *always-on*                         | `clipnorm=1.0` on both Adam optimizers                                                          |
 
 ### In-Training Evaluation Suite
-Runs every `eval_frequency` epochs on held-out real samples, logs results to W&B, and saves the **best** checkpoint by error score. See [Evaluation Suite](#-evaluation-suite).
+Runs every `eval_frequency` epochs on held-out real samples, logs results to W&B, and saves the **best** checkpoint by error score. See [In-Training Evaluation Suite](#in-training-evaluation-suite-1).
 
 ### Experiment Tracking
 [Weights & Biases](https://wandb.ai/) integration:
@@ -100,16 +100,19 @@ Runs every `eval_frequency` epochs on held-out real samples, logs results to W&B
 
 **Requirements:** Python `3.10 – 3.12` and dependencies listed in `pyproject.toml`.
 
-### Option A: Editable install (recommended)
+### Option A: Install from PyPI (recommended)
+
+```shell script
+pip install at-gan
+```
+
+### Option B: Editable install
+
+1. Clone this repository
+1. Run the following command:
 
 ```bash
 pip install -e .
-```
-
-### Option B: With GPU-enabled TensorFlow
-
-```shell script
-pip install -e ".[gpu]"
 ```
 
 
@@ -117,7 +120,7 @@ pip install -e ".[gpu]"
 
 ```shell script
 at-gan --help
-python -c "import at_gan; print('at-gan ready.')"
+python -c "import at_gan; print(at_gan.__version__)"
 ```
 
 
@@ -151,7 +154,7 @@ at-gan --help
 **Examples:**
 
 ```shell script
-at-gan train -c configs/config_d2_v0.7.0.yaml -w -e -g 50000
+at-gan train -c configs/config.yaml -w -e -g 5000
 ```
 
 Note: A run can be resumed via the `resume_run_id` config key. See [Configuration Reference](#configuration-reference).
@@ -170,10 +173,10 @@ Note: A run can be resumed via the `resume_run_id` config key. See [Configuratio
 
 ```shell script
 # Launch a new 50-run sweep
-at-gan sweep -c configs/base_config.yaml -s configs/sweep_config.yaml -n 50
+at-gan sweep -c configs/config.yaml -s configs/sweep_config.yaml -n 50
 
 # Resume an existing sweep
-at-gan sweep -c configs/config_d1_v0.7.2.yaml -id abc123 -n 20
+at-gan sweep -c configs/config.yaml -id abc123 -n 20
 ```
 
 ---
@@ -188,7 +191,7 @@ at-gan sweep -c configs/config_d1_v0.7.2.yaml -id abc123 -n 20
 | `--output` | `-o` | Optional override for CSV output path          |
 
 ```shell script
-at-gan generate -c configs/base_config.yaml -r a1b2c3 -n 10000 -o synthetic_data.csv
+at-gan generate -c configs/config.yaml -r a1b2c3 -n 10000 -o synthetic_data.csv
 ```
 
 Note: `generate` always loads **`best_generator.keras`**, not the latest.
@@ -211,9 +214,9 @@ at-gan evaluate -c real_data.csv -r synthetic_data.csv -t target_column
 
 ## API Usage
 
-The Python API exposes the same primary functions as the CLI, making it easy to integrate into existing projects.
+The Python API exposes the same primary functions as a CLI, making it easy to integrate into existing projects.
 
-See `src/examples/api_example.py` and `src/examples/api_example.ipynb` for a full API usage example.
+See `examples/api_example.py` and `examples/api_example.ipynb` for a full API usage example.
 
 > Note: The `train` entry point also accepts a `dict` instead of a path to a YAML file as input.
 
@@ -222,6 +225,8 @@ See `src/examples/api_example.py` and `src/examples/api_example.ipynb` for a ful
 ## Configuration Reference
 
 Experiments are driven by **two YAML files**: a base config and a sweep config.
+
+See `configs/config.yaml` and `configs/sweep_config.yaml` for examples and recommended default values for most datasets.
 
 ### Base Config Reference
 
@@ -296,7 +301,7 @@ training:
   # Evaluation & checkpointing
   checkpoint_frequency: 100     # save "latest" every N epochs
   eval_frequency:       100     # run evaluation suite every N epochs
-  max_eval_samples:     800    # cap real-sample holdout for evaluation
+  test_split_pct:       0.2     # percentage of data to hold out for in-training evaluation
 ```
 
 
@@ -409,11 +414,11 @@ parameters:
 
 ## In-Training Evaluation Suite
 
-Every `eval_frequency` epochs, `GANCallback` generates `max_eval_samples` synthetic rows and runs an evaluation against the held-out real samples to guide the hyperparameter sweep:
+Every `eval_frequency` epochs, `GANCallback` generates synthetic samples and runs an evaluation against the held-out real samples to guide the hyperparameter sweep:
 
 | Metric            | Computation                                                                                                               |
 |-------------------|---------------------------------------------------------------------------------------------------------------------------|
-| PCA Error         | Wasserstein distance between real and synthetic data across the first five PCA components                                 |
+| PCA Error         | First Wasserstein distance between real and synthetic data across the first five PCA components                           |
 | Adversarial Error | Absolute AUC deviation of a Random Forest classifier trained to distinguish real and synthetic data (`\|AUC - 0.5\| × 2`) |
 | **Total Error**   | `sqrt((pca_error² + adv_error²) / 2.0)`                                                                                   |
 
