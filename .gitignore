@@ -1,9 +1,9 @@
 # Custom
 .idea
-data/*
-eval/*
-experiments/*
-wandb/*
+data
+eval
+experiments
+wandb
 
 uv.lock
 
