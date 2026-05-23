@@ -106,9 +106,9 @@ Runs every `eval_frequency` epochs on held-out real samples, logs results to W&B
 pip install at-gan
 ```
 
-### Option B: Editable install
+### Option B: Editable install from the [GitHub Repository](https://github.com/Jns-M/at-gan)
 
-1. Clone this repository
+1. Clone the [GitHub repository](https://github.com/Jns-M/at-gan)
 1. Run the following command:
 
 ```bash
@@ -216,7 +216,7 @@ at-gan evaluate -c real_data.csv -r synthetic_data.csv -t target_column
 
 The Python API exposes the same primary functions as a CLI, making it easy to integrate into existing projects.
 
-See `examples/api_example.py` and `examples/api_example.ipynb` for a full API usage example.
+See `examples/api_example.py` and `examples/api_example.ipynb` in the [GitHub Repository](https://github.com/Jns-M/at-gan) for a full API usage example.
 
 > Note: The `train` entry point also accepts a `dict` instead of a path to a YAML file as input.
 
@@ -226,7 +226,7 @@ See `examples/api_example.py` and `examples/api_example.ipynb` for a full API us
 
 Experiments are driven by **two YAML files**: a base config and a sweep config.
 
-See `configs/config.yaml` and `configs/sweep_config.yaml` for examples and recommended default values for most datasets.
+See `configs/config.yaml` and `configs/sweep_config.yaml` in the [GitHub Repository](https://github.com/Jns-M/at-gan) for examples and recommended default values for most datasets.
 
 ### Base Config Reference
 
