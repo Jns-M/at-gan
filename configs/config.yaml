@@ -1,0 +1,46 @@
+experiment_name: "default"
+resume_run_id: null
+seed: 1130
+
+data:
+  dataset_path: "datasets/adult_census_20k.csv"
+  output_path: "experiments/"
+  continuous_cols: ["age", "capital.gain", "capital.loss"]
+  binary_cols: []
+  categorical_cols: ["workclass", "education", "marital.status", "occupation", "relationship", "race", "sex"]
+  discrete_count_cols: ["hours.per.week"]
+  treat_bin_as_cat: false
+  beta_noise: true
+  smooth_categorical: true
+
+model:
+  latent_dim: 64
+  generator:
+    units: [ 128, 128 ]
+    dropout: 0.0
+    activation: "relu"
+    batch_norm: true
+  discriminator:
+    units: [ 256, 256, 256 ]
+    dropout: 0.2
+    activation: "leaky_relu"
+    negative_slope: 0.3
+    pack_size: 3
+    label_smoothing_min: 0.85
+    label_flipping: 0.05
+
+training:
+  device: "cpu"
+  epochs: 1000
+  batch_size: 512
+  g_updates_per_epoch: 1
+  adam_beta_1: 0.7
+  g_lr: 0.0003
+  d_lr: 0.0003
+  lr_cosine_decay: true
+  lr_cosine_decay_restart_epochs: 500
+  g_lr_decay_alpha: 0.1
+  d_lr_decay_alpha: 0.1
+  checkpoint_frequency: 100
+  eval_frequency: 100
+  test_split_pct: 0.2
