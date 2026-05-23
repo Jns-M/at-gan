@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "AT-GAN"
-version = "0.11.1"
+version = "0.11.2"
 description = "Training Framework for Arbitrary Tabular Generative Adversarial Networks"
 readme = "README.md"
 authors = [
@@ -64,6 +64,7 @@ Documentation = "https://github.com/Jns-M/AT-GAN#readme"
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["at_gan*"]
+exclude =  ["tests*"]
 
 [project.scripts]
 at-gan = "at_gan.cli:app"
