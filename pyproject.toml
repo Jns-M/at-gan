@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "AT-GAN"
-version = "0.11.4"
+name = "at-gan"
+version = "0.11.5"
 description = "Training Framework for Arbitrary Tabular Generative Adversarial Networks"
 readme = "README.md"
 authors = [
@@ -56,10 +56,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Jns-M/AT-GAN"
-Repository = "https://github.com/Jns-M/AT-GAN"
-Issues = "https://github.com/Jns-M/AT-GAN/issues"
-Documentation = "https://github.com/Jns-M/AT-GAN#readme"
+Homepage = "https://github.com/Jns-M/at-gan"
+Repository = "https://github.com/Jns-M/at-gan"
+Issues = "https://github.com/Jns-M/at-gan/issues"
+Documentation = "https://github.com/Jns-M/at-gan#readme"
 
 [tool.setuptools.packages.find]
 where = ["src"]
