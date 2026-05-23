@@ -1,4 +1,54 @@
-name: release-check.yaml
+name: Release Validation
+
 on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
+  validate-and-build:
+    name: Validate Release Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-with-history: false
+          python-version: '3.12'
+
+      - name: Install Build Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Extract Metadata Version
+        id: get_version
+        run: |
+          # Use python to extract the exact project version string from pyproject.toml
+          PROJECT_VERSION=$(python -c "import tomllib; f = open('pyproject.toml', 'rb'); print(tomllib.load(f)['project']['version'])")
+          echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
+          
+          # Strip the 'v' prefix from the git tag reference
+          GIT_TAG=${GITHUB_REF#refs/tags/v}
+          echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
+
+      - name: Verify Tag Matches pyproject.toml
+        run: |
+          echo "Checking version consistency..."
+          echo "Git Tag Version: ${{ env.GIT_TAG }}"
+          echo "Pyproject Version: ${{ env.PROJECT_VERSION }}"
+          if [ "${{ env.GIT_TAG }}" != "${{ env.PROJECT_VERSION }}" ]; then
+            echo "::error::Mismatched Versioning! Git tag 'v${{ env.GIT_TAG }}' does not match pyproject.toml version '${{ env.PROJECT_VERSION }}'"
+            exit 1
+          fi
+          echo "[PASS] Versions match perfectly."
+
+      - name: Build Source and Binary Distributions
+        run: python -m build
+
+      - name: Run Twine Validation Check
+        run: python -m twine check dist/*
