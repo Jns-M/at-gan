@@ -165,9 +165,9 @@ def evaluate(
     """
     from at_gan.api import evaluate as api_evaluate
 
-    typer.secho("\n==============================================================", fg=typer.colors.CYAN, bold=True)
-    typer.secho("  INITIATING SYNTHETIC DATA Evaluation SUITE", fg=typer.colors.CYAN, bold=True)
-    typer.secho("==============================================================\n", fg=typer.colors.CYAN, bold=True)
+    typer.secho("\n====================================================================", fg=typer.colors.CYAN, bold=True)
+    typer.secho("  SYNTHETIC DATA Evaluation SUITE", fg=typer.colors.CYAN, bold=True)
+    typer.secho("====================================================================\n", fg=typer.colors.CYAN, bold=True)
     if target:
         typer.secho(f"Target column '{target}' detected. Running full suite including TSTR...", fg=typer.colors.CYAN)
     else:
@@ -180,40 +180,40 @@ def evaluate(
         target_column=target
     )
 
-    typer.secho("\n==============================================================", fg=typer.colors.MAGENTA, bold=True)
-    typer.secho("  Evaluation VERDICT", fg=typer.colors.MAGENTA, bold=True)
-    typer.secho("==============================================================", fg=typer.colors.MAGENTA, bold=True)
+    typer.secho("\n====================================================================", fg=typer.colors.MAGENTA, bold=True)
+    typer.secho("  SYNTHETIC DATA Evaluation VERDICT", fg=typer.colors.MAGENTA, bold=True)
+    typer.secho("====================================================================", fg=typer.colors.MAGENTA, bold=True)
 
 
 
     # Privacy Evaluation
     min_dcr = results["dcr"]["dcr_min"]
-    if min_dcr > 0.001:
-        typer.secho(f"  [PASS] PRIVACY: SECURE (DCR {min_dcr:.3f} > 0, No Exact Copies)", fg=typer.colors.GREEN)
+    if round(min_dcr, 4) >= 0.0001:
+        typer.secho(f"  [PASS] PRIVACY: SECURE (DCR {min_dcr:.4f} > 0, No Exact Copies)", fg=typer.colors.GREEN)
     else:
-        typer.secho(f"  [FAIL] PRIVACY: COMPROMISED (DCR = 0, Exact Copy Detected!)", fg=typer.colors.RED, bold=True)
+        typer.secho(f"  [FAIL] PRIVACY: COMPROMISED (DCR = 0, Exact Copies Detected!)", fg=typer.colors.RED, bold=True)
 
     # Fidelity Evaluation
     sdv_score = results["sdv"]["sdv_overall_score"] * 100
     if sdv_score >= 85.0:
-        typer.secho(f"  [PASS] STATISTIC FIDELITY: {sdv_score:.1f}% SDV Overall Score", fg=typer.colors.GREEN)
+        typer.secho(f"  [PASS] STATISTIC FIDELITY: {sdv_score:.2f}% SDV Overall Score", fg=typer.colors.GREEN)
     elif sdv_score >= 70.0:
-        typer.secho(f"  [WARN] STATISTIC FIDELITY: {sdv_score:.1f}% SDV Overall Score", fg=typer.colors.YELLOW)
+        typer.secho(f"  [WARN] STATISTIC FIDELITY: {sdv_score:.2f}% SDV Overall Score", fg=typer.colors.YELLOW)
     else:
-        typer.secho(f"  [FAIL] STATISTIC FIDELITY: {sdv_score:.1f}% SDV Overall Score", fg=typer.colors.RED)
+        typer.secho(f"  [FAIL] STATISTIC FIDELITY: {sdv_score:.2f}% SDV Overall Score", fg=typer.colors.RED)
 
     # Utility Evaluation
     if results["tstr"]:
         utility = results["tstr"]["utility_retention"]
         if utility >= 85.0:
-            typer.secho(f"  [PASS] UTILITY RETENTION: {utility:.1f}% F1-Score Retention", fg=typer.colors.GREEN)
+            typer.secho(f"  [PASS] UTILITY RETENTION: {utility:.2f}% F1-Score Retention", fg=typer.colors.GREEN)
         elif utility >= 70.0:
-            typer.secho(f"  [WARN] UTILITY RETENTION: {utility:.1f}% F1-Score Retention", fg=typer.colors.YELLOW)
+            typer.secho(f"  [WARN] UTILITY RETENTION: {utility:.2f}% F1-Score Retention", fg=typer.colors.YELLOW)
         else:
-            typer.secho(f"  [FAIL] UTILITY RETENTION: {utility:.1f}% F1-Score Retention", fg=typer.colors.RED)
+            typer.secho(f"  [FAIL] UTILITY RETENTION: {utility:.2f}% F1-Score Retention", fg=typer.colors.RED)
 
-    typer.secho("==============================================================", fg=typer.colors.MAGENTA, bold=True)
-    typer.secho("==============================================================\n", fg=typer.colors.MAGENTA, bold=True)
+    typer.secho("====================================================================", fg=typer.colors.MAGENTA, bold=True)
+    typer.secho("====================================================================\n", fg=typer.colors.MAGENTA, bold=True)
 
 
 if __name__ == "__main__":

@@ -28,16 +28,13 @@ class DCREvaluator:
         """Computes the DCR metrics across the dataset.
 
         Returns:
-            Dictionary containing min_dcr, mean_dcr, and 5th_percentile_dcr.
+            Dictionary containing min_dcr, mean_dcr, 5th_percentile_dcr,
+            exact_copies, and pct_exact_copies.
         """
         print("\nCalculating Distance to Closest Record (Privacy)...", end=" ", flush=True)
 
-        # Ensure equal sizes for fair distance metrics
-        n = min(len(self.real_df), len(self.synth_df))
-        n = min(n, 10000)
-
-        real_sample = self.real_df.sample(n=n, random_state=1130)
-        synth_sample = self.synth_df.sample(n=n, random_state=1130)
+        real_sample = self.real_df
+        synth_sample = self.synth_df
 
         preprocessor = self._build_preprocessor(real_sample)
 
@@ -54,15 +51,20 @@ class DCREvaluator:
         mean_dcr = float(np.mean(distances))
         p05_dcr = float(np.percentile(distances, 5))
 
-        print(f"Min. DCR: {min_dcr:.4f}")
+        exact_copies = int(np.sum(distances < 5e-5))
+        pct_exact_copies = float(exact_copies / len(distances) * 100)
 
+        print(f"Min. DCR: {min_dcr:.4f}")
         print(f"\tMean DCR: {mean_dcr:.4f}")
         print(f"\t5th Percentile DCR: {p05_dcr:.4f}")
+        print(f"\tExact Copies: {exact_copies} ({pct_exact_copies:.2f}%)")
 
         return {
             "dcr_min": min_dcr,
             "dcr_mean": mean_dcr,
             "dcr_5th_percentile": p05_dcr,
+            "exact_copies": exact_copies,
+            "pct_exact_copies": pct_exact_copies,
         }
 
     def _build_preprocessor(self, X_reference: pd.DataFrame) -> ColumnTransformer:
