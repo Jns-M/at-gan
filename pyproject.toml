@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "at-gan"
-version = "0.12.8"
+version = "0.12.9"
 description = "Training Framework for Arbitrary Tabular Generative Adversarial Networks"
 readme = "README.md"
 authors = [

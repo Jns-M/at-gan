@@ -301,14 +301,20 @@ class GANCallback(tf.keras.callbacks.Callback):
 
         sns.heatmap(real_corr, ax=axes[0], cmap="coolwarm", vmin=-1, vmax=1, cbar=False)
         axes[0].set_title("Real Data Correlation")
+        axes[0].set_xlabel("Feature Index")
+        axes[0].set_ylabel("Feature Index")
 
         sns.heatmap(fake_corr, ax=axes[1], cmap="coolwarm", vmin=-1, vmax=1, cbar=False)
         axes[1].set_title("Synthetic Data Correlation")
+        axes[1].set_xlabel("Feature Index")
+        axes[1].set_ylabel("Feature Index")
 
         # Plot the absolute difference
         diff_corr = np.abs(real_corr - fake_corr)
         sns.heatmap(diff_corr, ax=axes[2], cmap="Reds", vmin=0, vmax=2)
         axes[2].set_title("Absolute Difference")
+        axes[2].set_xlabel("Feature Index")
+        axes[2].set_ylabel("Feature Index")
 
         plt.tight_layout()
         return fig
@@ -330,6 +336,8 @@ class GANCallback(tf.keras.callbacks.Callback):
         ax.scatter(fake_pca[:, 0], fake_pca[:, 1], c="red", alpha=0.3, label="Synthetic", s=10)
         ax.set_title("PCA Overlap: PC1 vs. PC2")
         ax.legend()
+        ax.set_xlabel("PC1")
+        ax.set_ylabel("PC2")
         plt.tight_layout()
         return fig
 
