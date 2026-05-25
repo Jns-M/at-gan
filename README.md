@@ -200,15 +200,17 @@ Note: `generate` always loads **`best_generator.keras`**, not the latest.
 
 ### `evaluate`: Run synthetic data evaluation (post-training)
 
-| Flag          | Short | Description                    |
-|---------------|-------|--------------------------------|
-| `--real`      | `-r`  | Path to the real data CSV      |
-| `--synthetic` | `-s`  | Path to the synthetic data CSV |
-| `--target`    | `-t`  | Optional target column for TSTR evaluation  |
+| Flag          | Short | Description                                           |
+|---------------|-------|-------------------------------------------------------|
+| `--real`      | `-r`  | Path to the real data CSV                             |
+| `--synthetic` | `-s`  | Path to the synthetic data CSV                        |
+| `--target`    | `-t`  | Discrete target column for (optional) TSTR evaluation |
 
 ```shell script
 at-gan evaluate -c real_data.csv -r synthetic_data.csv -t target_column
 ```
+
+Note: The TSTR evaluation is only performed if a discrete feature (i.e. binary or categorical) is specified as the target column.
 
 ---
 

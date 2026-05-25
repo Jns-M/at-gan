@@ -323,7 +323,7 @@ class GANCallback(tf.keras.callbacks.Callback):
         fig, ax = plt.subplots(figsize=(8, 6))
         ax.scatter(self.real_pca[:, 0], self.real_pca[:, 1], c="blue", alpha=0.3, label="Real", s=10)
         ax.scatter(fake_pca[:, 0], fake_pca[:, 1], c="red", alpha=0.3, label="Synthetic", s=10)
-        ax.set_title("PCA Overlap (Top 2 Components)")
+        ax.set_title("PCA Overlap: PC1 vs. PC2")
         ax.legend()
         plt.tight_layout()
         return fig
