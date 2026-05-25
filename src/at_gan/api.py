@@ -11,6 +11,8 @@ from pathlib import Path
 
 import pandas as pd
 import yaml
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from at_gan.engine.core import GANCoreEngine
 from at_gan.engine.sweeper import GANSweepManager
@@ -18,6 +20,7 @@ from at_gan.engine.synthesizer import GANSynthesizer
 from at_gan.eval.dcr import DCREvaluator
 from at_gan.eval.sdv import SDVEvaluator
 from at_gan.eval.tstr import TSTREvaluator
+from at_gan.eval.plots import GANEvaluationPlotter
 from at_gan.utils.paths import ExperimentPathManager
 
 
@@ -117,6 +120,7 @@ def evaluate(
         real_data_path: str | Path,
         synthetic_data_path: str | Path,
         target_column: str | None = None,
+        plots: bool = False
 ) -> dict:
     """Runs the full benchmark suite (SDV, DCR, and conditionally TSTR).
 
@@ -124,6 +128,7 @@ def evaluate(
         real_data_path: Path to the ground-truth CSV.
         synthetic_data_path: Path to the GAN-generated CSV.
         target_column: Optional target column name. If provided, TSTR is also run.
+        plots: Whether to generate plots for evaluation results.
 
     Returns:
         Dict containing nested results for ``sdv``, ``dcr``, and ``tstr``.
@@ -175,5 +180,10 @@ def evaluate(
         results["tstr"] = tstr_eval.run_evaluation()
     else:
         results["tstr"] = None
+
+    if plots:
+        plotter = GANEvaluationPlotter(real_df=real_df, synth_df=synth_df, dpi=300)
+        plotter.generate_all_plots()
+        results["plotter"] = plotter
 
     return results
