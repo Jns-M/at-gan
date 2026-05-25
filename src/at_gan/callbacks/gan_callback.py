@@ -93,6 +93,12 @@ class GANCallback(tf.keras.callbacks.Callback):
         real_data_scaled = self.scaler.fit_transform(self.real_data_np)
         self.real_pca = self.pca.fit_transform(real_data_scaled)
 
+        wandb.define_metric("Eval/Total_Error", summary="min")
+        wandb.define_metric("Eval/PCA_Error", summary="min")
+        wandb.define_metric("Eval/Adversarial_Error", summary="min")
+        wandb.define_metric("Eval/Correlation_Error", summary="min")
+        wandb.define_metric("Eval/Adversarial_AUC", summary="min")
+
     def on_epoch_end(self, epoch, logs=None):
         """Triggers checkpointing and/or evaluation based on configured frequencies.
 
@@ -111,11 +117,6 @@ class GANCallback(tf.keras.callbacks.Callback):
             self.run_evaluation_suite(epoch=epoch)
 
     def on_train_end(self, logs=None):
-        """Prints the best model summary to stdout at the conclusion of training.
-
-        Args:
-            logs: Unused. Passed by the Keras training loop.
-        """
         print("\n" + "=" * 50)
         print(" TRAINING COMPLETE: BEST MODEL SUMMARY ")
         print("=" * 50)
