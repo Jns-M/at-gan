@@ -3,7 +3,7 @@ name: Production Release
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
 
 jobs:
   validate-build-publish:
@@ -56,8 +56,7 @@ jobs:
           PROJECT_VERSION=$(python -c "import tomllib; f = open('pyproject.toml', 'rb'); print(tomllib.load(f)['project']['version'])")
           echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
           
-          # Extract tag version from refs/tags/v1.2.3 -> 1.2.3
-          GIT_TAG=${GITHUB_REF#refs/tags/v}
+          GIT_TAG="${GITHUB_REF_NAME}"
           echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
 
       - name: Verify Tag Matches pyproject.toml
@@ -66,7 +65,7 @@ jobs:
           echo "Git Tag Version: ${{ env.GIT_TAG }}"
           echo "Pyproject Version: ${{ env.PROJECT_VERSION }}"
           if [ "${{ env.GIT_TAG }}" != "${{ env.PROJECT_VERSION }}" ]; then
-            echo "::error::Mismatched Versioning! Git tag 'v${{ env.GIT_TAG }}' does not match pyproject.toml version '${{ env.PROJECT_VERSION }}'"
+            echo "::error::Mismatched Versioning! Git tag '${{ env.GIT_TAG }}' does not match pyproject.toml version '${{ env.PROJECT_VERSION }}'"
             exit 1
           fi
           echo "[PASS] Versions match perfectly."
