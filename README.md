@@ -210,7 +210,7 @@ Note: `generate` always loads **`best_generator.keras`**, not the latest.
 at-gan evaluate -c real_data.csv -r synthetic_data.csv -t target_column
 ```
 
-Note: The TSTR evaluation is only performed if a discrete feature (i.e. binary or categorical) is specified as the target column.
+Note: TSTR evaluation is only performed if a discrete feature (i.e. binary or categorical) is specified as the target.
 
 ---
 
