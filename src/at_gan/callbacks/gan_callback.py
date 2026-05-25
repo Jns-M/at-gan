@@ -117,6 +117,10 @@ class GANCallback(tf.keras.callbacks.Callback):
             self.run_evaluation_suite(epoch=epoch)
 
     def on_train_end(self, logs=None):
+        """Prints the best model summary to stdout at the conclusion of training.
+        Args:
+            logs: Unused. Passed by the Keras training loop.
+        """
         print("\n" + "=" * 50)
         print(" TRAINING COMPLETE: BEST MODEL SUMMARY ")
         print("=" * 50)
