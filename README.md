@@ -100,18 +100,25 @@ Runs every `eval_frequency` epochs on held-out real samples, logs results to W&B
 
 **Requirements:** Python `3.10 – 3.12` and dependencies listed in `pyproject.toml`.
 
-### Option A: Install from PyPI (recommended)
+### Option A: Standard-Installation from [PyPI](https://pypi.org/project/at-gan/) (recommended)
 
 ```shell script
 pip install at-gan
 ```
 
-### Option B: Editable install from the [GitHub Repository](https://github.com/Jns-M/at-gan)
+### Option B: Core-Only Installation from [PyPI](https://pypi.org/project/at-gan-core) (recommended for Docker & GPU-Support)
+
+```shell script
+pip install at-gan-core
+```
+Note: This installation does not include *TensorFlow* in its dependencies, making it ideal for training with GPU-Support enabled, e.g. in Docker containers with preconfigured CUDA/cuDNN environments.
+
+### Option C: Editable install from the [GitHub Repository](https://github.com/Jns-M/at-gan)
 
 1. Clone the [GitHub repository](https://github.com/Jns-M/at-gan)
 1. Run the following command:
 
-```bash
+```shell script
 pip install -e .
 ```
 
