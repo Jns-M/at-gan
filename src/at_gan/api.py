@@ -11,8 +11,6 @@ from pathlib import Path
 
 import pandas as pd
 import yaml
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 from at_gan.engine.core import GANCoreEngine
 from at_gan.engine.sweeper import GANSweepManager
