@@ -10,7 +10,7 @@ jobs:
     name: Build, Release, and Publish
     runs-on: ubuntu-latest
     # only run if tag is pushed on main branch
-    if: github.ref_type == 'tag' && github.ref == 'refs/heads/main'
+    if: github.ref_type == 'tag'
     environment: pypi
     permissions:
       id-token: write
