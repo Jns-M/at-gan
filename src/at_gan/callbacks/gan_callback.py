@@ -10,6 +10,7 @@ import seaborn as sns
 import tensorflow as tf
 import wandb
 from matplotlib import pyplot as plt
+from matplotlib import colors as mcolors
 from scipy.stats import wasserstein_distance
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
@@ -288,33 +289,28 @@ class GANCallback(tf.keras.callbacks.Callback):
         return float(1.0 - np.exp(-value))
 
     def _plot_correlation_heatmap(self, real_corr: np.ndarray, fake_corr: np.ndarray) -> plt.Figure:
-        """Renders a side-by-side heatmap of real, fake, and absolute-difference correlation matrices.
-
-        Args:
-            real_corr: Real data Pearson correlation matrix.
-            fake_corr: Generated data Pearson correlation matrix.
-
-        Returns:
-            Matplotlib ``Figure`` with three heatmap panels.
-        """
+        """Renders side-by-side heatmaps using a modified lighter RdBu_r palette."""
         fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
-        sns.heatmap(real_corr, ax=axes[0], cmap="coolwarm", vmin=-1, vmax=1, cbar=False)
-        axes[0].set_title("Real Data Correlation")
-        axes[0].set_xlabel("Feature Index")
-        axes[0].set_ylabel("Feature Index")
+        base_cmap = plt.get_cmap('RdBu_r')
+        truncated_cmap = mcolors.LinearSegmentedColormap.from_list(
+            'lighter_rdbu', base_cmap(np.linspace(0.15, 0.85, 256))
+        )
+        base_cmpa_2 = plt.get_cmap('Reds')
+        truncated_cmap_2 = mcolors.LinearSegmentedColormap.from_list(
+            'lighter_reds', base_cmpa_2(np.linspace(0.0, 0.75, 256))
+        )
 
-        sns.heatmap(fake_corr, ax=axes[1], cmap="coolwarm", vmin=-1, vmax=1, cbar=False)
-        axes[1].set_title("Synthetic Data Correlation")
-        axes[1].set_xlabel("Feature Index")
-        axes[1].set_ylabel("Feature Index")
+        # Use the custom cmap across the primary correlation matrices
+        sns.heatmap(real_corr, ax=axes[0], cmap=truncated_cmap, vmin=-1, vmax=1, square=True, cbar_kws={"shrink": .8})
+        axes[0].set_title("Real Data Correlation", fontsize=12, weight='bold')
 
-        # Plot the absolute difference
+        sns.heatmap(fake_corr, ax=axes[1], cmap=truncated_cmap, vmin=-1, vmax=1, square=True, cbar_kws={"shrink": .8})
+        axes[1].set_title("Synthetic Data Correlation", fontsize=12, weight='bold')
+
         diff_corr = np.abs(real_corr - fake_corr)
-        sns.heatmap(diff_corr, ax=axes[2], cmap="Reds", vmin=0, vmax=2)
-        axes[2].set_title("Absolute Difference")
-        axes[2].set_xlabel("Feature Index")
-        axes[2].set_ylabel("Feature Index")
+        sns.heatmap(diff_corr, ax=axes[2], cmap=truncated_cmap_2, vmin=0, vmax=1, square=True, cbar_kws={"shrink": .8})
+        axes[2].set_title("Absolute Difference in Correlation", fontsize=12, weight='bold')
 
         plt.tight_layout()
         return fig
@@ -332,12 +328,15 @@ class GANCallback(tf.keras.callbacks.Callback):
         fake_pca = self.pca.transform(fake_scaled)
 
         fig, ax = plt.subplots(figsize=(8, 6))
-        ax.scatter(self.real_pca[:, 0], self.real_pca[:, 1], c="blue", alpha=0.3, label="Real", s=10)
-        ax.scatter(fake_pca[:, 0], fake_pca[:, 1], c="red", alpha=0.3, label="Synthetic", s=10)
-        ax.set_title("PCA Overlap: PC1 vs. PC2")
-        ax.legend()
-        ax.set_xlabel("PC1")
-        ax.set_ylabel("PC2")
+        ax.scatter(self.real_pca[:, 0], self.real_pca[:, 1], c="#1f77b4", alpha=0.35, label="Real", s=15)
+        ax.scatter(fake_pca[:, 0], fake_pca[:, 1], c="#d62728", alpha=0.35, label="Synthetic", s=15)
+
+        ax.set_title("PCA Overlap: PC1 vs. PC2", fontsize=14, pad=10, weight='bold')
+        ax.set_xlabel("Principal Component 1")
+        ax.set_ylabel("Principal Component 2")
+        ax.legend(frameon=True, shadow=True)
+        sns.despine()
+
         plt.tight_layout()
         return fig
 
