@@ -1,7 +1,7 @@
 method: bayes
 
 metric:
-  name: Eval/Total_Error
+  name: Eval/Total_Error.min
   goal: minimize
 
 early_terminate:

@@ -3,14 +3,14 @@ name: Production Release
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
 
 jobs:
   validate-build-publish:
     name: Build, Release, and Publish
     runs-on: ubuntu-latest
-    # This ensures it only runs if the tag was pushed on your main branch history
-    if: github.ref_type == 'tag'
+    # only run if tag is pushed on main branch
+    if: github.ref_type == 'tag' && github.ref == 'refs/heads/main'
     environment: pypi
     permissions:
       id-token: write
@@ -32,7 +32,6 @@ jobs:
           fi
           echo "[PASS] Tag is verified on the main branch."
 
-      # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -42,9 +41,8 @@ jobs:
       - name: Install Build Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine
+          pip install build twine tomli-w
 
-      # Safely extract the version from the tag
       - name: Extract Metadata Version
         id: get_version
         run: |
@@ -56,8 +54,7 @@ jobs:
           PROJECT_VERSION=$(python -c "import tomllib; f = open('pyproject.toml', 'rb'); print(tomllib.load(f)['project']['version'])")
           echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
           
-          # Extract tag version from refs/tags/v1.2.3 -> 1.2.3
-          GIT_TAG=${GITHUB_REF#refs/tags/v}
+          GIT_TAG="${GITHUB_REF_NAME}"
           echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
 
       - name: Verify Tag Matches pyproject.toml
@@ -66,14 +63,42 @@ jobs:
           echo "Git Tag Version: ${{ env.GIT_TAG }}"
           echo "Pyproject Version: ${{ env.PROJECT_VERSION }}"
           if [ "${{ env.GIT_TAG }}" != "${{ env.PROJECT_VERSION }}" ]; then
-            echo "::error::Mismatched Versioning! Git tag 'v${{ env.GIT_TAG }}' does not match pyproject.toml version '${{ env.PROJECT_VERSION }}'"
+            echo "::error::Mismatched Versioning! Git tag '${{ env.GIT_TAG }}' does not match pyproject.toml version '${{ env.PROJECT_VERSION }}'"
             exit 1
           fi
           echo "[PASS] Versions match perfectly."
 
-      - name: Build Source and Binary Distributions
+      # --- BUILD STANDARD PACKAGE ---
+      - name: Build Standard Distributions
         run: python -m build
 
+      # --- MODIFY TOML & BUILD CORE PACKAGE ---
+      - name: Rewrite pyproject.toml for Core Variant
+        run: |
+          python -c '
+          import tomllib
+          import tomli_w
+
+          with open("pyproject.toml", "rb") as f:
+              data = tomllib.load(f)
+
+          # Update the package name
+          data["project"]["name"] = "at-gan-core"
+
+          # Remove the heavy TensorFlow requirement from main dependencies
+          old_deps = data["project"]["dependencies"]
+          new_deps = [d for d in old_deps if not d.startswith("tensorflow")]
+          data["project"]["dependencies"] = new_deps
+
+          with open("pyproject.toml", "wb") as f:
+              tomli_w.dump(data, f)
+          '
+          echo "[INFO] pyproject.toml modified successfully for core build."
+
+      - name: Build Core Distributions
+        run: python -m build
+
+      # --- VALIDATION AND RELEASE ---
       - name: Run Twine Validation Check
         run: python -m twine check dist/*
 
@@ -87,6 +112,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Securely publish to PyPI using Trusted Publishers
-      - name: Publish Package to PyPI
+      # Trusted Publishers
+      - name: Publish All Packages to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
