@@ -212,7 +212,6 @@ class GANEvaluationPlotter:
                 else:
                     plot_x_var = feature
 
-                # Side-by-side grouped categorical bar chart comparison
                 sns.barplot(
                     data=combined_dist,
                     x=plot_x_var,
@@ -243,7 +242,6 @@ class GANEvaluationPlotter:
                                 if bar_idx < len(categories):
                                     category_label = categories[bar_idx]
 
-                                    # Safe variant casting sequence for accurate dictionary indexing
                                     try:
                                         if category_label.endswith('.0'):
                                             category_label = category_label[:-2]
@@ -295,13 +293,11 @@ class GANEvaluationPlotter:
             x_min, x_max = np.percentile(combined_x, [0, 99.9])
             y_min, y_max = np.percentile(combined_y, [0, 99.9])
 
-            # Real dataset plot
             sns.kdeplot(data=self.real_df, x=f1, y=f2, ax=axes[i][0], cmap="Blues", fill=True, alpha=0.8, warn_singular=False)
             axes[i][0].set_title(f"Real: '{f1}' vs. '{f2}'", weight='bold')
             axes[i][0].set_xlim(x_min, x_max)
             axes[i][0].set_ylim(y_min, y_max)
 
-            # Synthetic dataset plot
             sns.kdeplot(data=self.synth_df, x=f1, y=f2, ax=axes[i][1], cmap="Reds", fill=True, alpha=0.8, warn_singular=False)
             axes[i][1].set_title(f"Synthetic: '{f1}' vs. '{f2}'", weight='bold')
             axes[i][1].set_xlim(x_min, x_max)
@@ -316,7 +312,6 @@ class GANEvaluationPlotter:
         cat_feature, cont_feature = cat_feature.lower(), cont_feature.lower()
         print(f"\nGenerating Grouped Nested Boxplot: {cont_feature} by {cat_feature}...", end=" ", flush=True)
 
-        # Map display labels to flat string classifications for explicit dictionary routing paths
         def clean_val(val):
             try:
                 if isinstance(val, (int, float, np.number)) and val == int(val):
