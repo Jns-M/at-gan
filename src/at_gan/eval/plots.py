@@ -428,6 +428,140 @@ class GANEvaluationPlotter:
         self.plot_feature_distributions(save_path=f"{save_dir}/feature_distributions.png" if save_dir else None)
         print("\nAll plots generated successfully.")
 
+    def plot_model_comparison(self, metrics_list: List[dict], save_dir: Optional[str] = None) -> None:
+        """Generates a multi-plot suite comparing performance across multiple generative models.
+
+        Args:
+            metrics_list: List of metric dictionaries, each containing 'dcr', 'sdv',
+                         'tstr', and 'name' keys.
+            save_dir: Optional directory path where generated plots will be saved.
+        """
+        print(f"\nGenerating Multi-Model Comparison Plots for {len(metrics_list)} models...", flush=True)
+
+        # ----------------------------------------------------
+        # Extract Data into DataFrames
+        # ----------------------------------------------------
+        overall_data = []
+        dcr_dist_data = []
+        copies_data = []
+        tstr_data = []
+        trtr_values = []
+
+        for m in metrics_list:
+            name = m['name']
+
+            # 1. Macro Overview Metric parsing
+            privacy_score = 100.0 - m['dcr'].get('pct_exact_copies', 0.0)
+            overall_data.append({'Model': name, 'Metric': 'Privacy Score\n(100 - % Copies)', 'Value': privacy_score})
+            overall_data.append(
+                {'Model': name, 'Metric': 'Statistical Fidelity\n(SDV)', 'Value': m['sdv']['sdv_overall_score'] * 100})
+            overall_data.append(
+                {'Model': name, 'Metric': 'Utility Retention\n(F1 Score)', 'Value': m['tstr']['utility_retention']})
+
+            # 2. DCR Distances
+            dcr_dist_data.append({'Model': name, 'Metric': 'DCR Min', 'Value': m['dcr']['dcr_min']})
+            dcr_dist_data.append(
+                {'Model': name, 'Metric': 'DCR 5th Percentile', 'Value': m['dcr']['dcr_5th_percentile']})
+            dcr_dist_data.append({'Model': name, 'Metric': 'DCR Mean', 'Value': m['dcr']['dcr_mean']})
+
+            # 3. Exact Copies Percentages
+            copies_data.append({'Model': name, 'Pct Exact Copies': m['dcr']['pct_exact_copies']})
+
+            # 4. TSTR Machine Learning Utility Performance
+            tstr_data.append(
+                {'Model': name, 'Metric': 'TSTR (Synth Train / Real Test)', 'Value': m['tstr']['tstr_mean_f1'] * 100})
+            if 'trtr_mean_f1' in m['tstr']:
+                trtr_values.append(m['tstr']['trtr_mean_f1'] * 100)
+
+        df_overall = pd.DataFrame(overall_data)
+        df_dcr = pd.DataFrame(dcr_dist_data)
+        df_copies = pd.DataFrame(copies_data)
+        df_tstr = pd.DataFrame(tstr_data)
+
+        sns.set_theme(style="whitegrid", palette="Dark2")
+
+        # ----------------------------------------------------
+        # Plot A: Framework Macro Breakdown (0 - 100%)
+        # ----------------------------------------------------
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(data=df_overall, x='Metric', y='Value', hue='Model', ax=ax, alpha=0.85)
+        ax.set_title("Synthesis Quality & Privacy Matrix Comparison", fontsize=14, weight='bold', pad=15)
+        ax.set_ylabel("Percentage (%)")
+        ax.set_xlabel("")
+        ax.set_ylim(0, 110)
+
+        for container in ax.containers:
+            ax.bar_label(container, fmt='%.2f%%', padding=3, fontweight='bold', fontsize=9)
+
+        ax.legend(frameon=True, shadow=True, loc='lower right')
+        sns.despine()
+        plt.tight_layout()
+        self._handle_output(fig, f"{save_dir}/comparison_macro_metrics.png" if save_dir else None)
+
+        # ----------------------------------------------------
+        # Plot B: DCR Boundary Distance Statistics
+        # ----------------------------------------------------
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(data=df_dcr, x='Metric', y='Value', hue='Model', ax=ax, alpha=0.85)
+        ax.set_title("Distance to Closest Record (DCR) Statistics", fontsize=14, weight='bold', pad=15)
+        ax.set_ylabel("Euclidean Distance Scale (Higher = More Private)")
+        ax.set_xlabel("")
+
+        for container in ax.containers:
+            ax.bar_label(container, fmt='%.3f', padding=3, fontweight='bold', fontsize=9)
+
+        ax.legend(frameon=True, shadow=True, loc='lower right')
+        sns.despine()
+        plt.tight_layout()
+        self._handle_output(fig, f"{save_dir}/comparison_dcr_distances.png" if save_dir else None)
+
+        # ----------------------------------------------------
+        # Plot C: Memory Leakage (Percentage Exact Copies)
+        # ----------------------------------------------------
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(data=df_copies, x='Model', y='Pct Exact Copies', ax=ax, color='#d62728', alpha=0.75)
+        ax.set_title("Data Leakage: Rate of Exact Matches Detected", fontsize=14, weight='bold', pad=15)
+        ax.set_xlabel("Generative Pipeline Framework")
+        ax.set_ylabel("Exact Copies (%)")
+
+        # Balance scale if values are tiny, while preserving room for labels
+        max_val = df_copies['Pct Exact Copies'].max()
+        ax.set_ylim(0, max(max_val * 1.15, 5.0))
+
+        for container in ax.containers:
+            ax.bar_label(container, fmt='%.2f%%', padding=3, fontweight='bold', fontsize=9)
+
+        sns.despine()
+        plt.tight_layout()
+        self._handle_output(fig, f"{save_dir}/comparison_exact_copies.png" if save_dir else None)
+
+        # ----------------------------------------------------
+        # Plot D: ML Utility Analysis (TSTR vs. Shared TRTR Baseline)
+        # ----------------------------------------------------
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(data=df_tstr, x='Metric', y='Value', hue='Model', ax=ax, alpha=0.85)
+        ax.set_title("Downstream Predictor Performance: TSTR vs. Real Baseline", fontsize=14, weight='bold', pad=15)
+        ax.set_ylabel("Mean Cross-Model Classifier F1 Score (%)")
+        ax.set_xlabel("")
+        ax.set_ylim(0, 110)
+
+        # Draw a single unified reference line for the shared TRTR value if present
+        if trtr_values:
+            mean_trtr = np.mean(trtr_values)
+            ax.axhline(mean_trtr, color='#1f77b4', linestyle='--', linewidth=2,
+                       label=f'TRTR Baseline ({mean_trtr:.2f}%)')
+
+        for container in ax.containers:
+            ax.bar_label(container, fmt='%.2f%%', padding=3, fontweight='bold', fontsize=9)
+
+        ax.legend(frameon=True, shadow=True, loc='lower right')
+        sns.despine()
+        plt.tight_layout()
+        self._handle_output(fig, f"{save_dir}/comparison_utility_train_test.png" if save_dir else None)
+
+        if save_dir:
+            print(f"All comparison plots successfully exported to: {save_dir}")
+
     def _handle_output(self, fig: plt.Figure, save_path: Optional[str]) -> None:
         """Internal helper to force-render plots regardless of the active Matplotlib backend."""
         if save_path:

@@ -117,7 +117,8 @@ def generate(
 def evaluate(
         real_data_path: str | Path,
         synthetic_data_path: str | Path,
-        target_column: str | None = None
+        target_column: str | None = None,
+        name: str | None = None
 ) -> dict:
     """Runs the full benchmark suite (SDV, DCR, and conditionally TSTR).
 
@@ -125,6 +126,7 @@ def evaluate(
         real_data_path: Path to the ground-truth CSV.
         synthetic_data_path: Path to the GAN-generated CSV.
         target_column: Optional target column name. If provided, TSTR is also run.
+        name: Optional name for the experiment. If provided, it will be used in the output directory.
 
     Returns:
         Dict containing nested results for ``sdv``, ``dcr``, and ``tstr``.
@@ -179,5 +181,8 @@ def evaluate(
 
     plotter = GANEvaluationPlotter(real_df=real_df, synth_df=synth_df, dpi=300)
     results["plotter"] = plotter
+
+    if name:
+        results["name"]= name
 
     return results
